@@ -36,7 +36,7 @@ const columns = [
     label: "Age",
     options: {
       filter: true,
-      sort: false
+      sort: true
     }
   },
   {
@@ -80,8 +80,9 @@ const options = {
   },
   selectableRows: "single",
   filterType: "dropdown",
-  responsive: "scrollMaxHeight",
-  rowsPerPage: 10,
+  tableBodyMaxHeight: '499px',
+  rowsPerPage: 5,
+  rowsPerPageOptions: [],
   expandableRows: true,
   renderExpandableRow: (rowData: Array<any>) => {
     const groupByAge = data.filter((item) => item.age === rowData[2]);
