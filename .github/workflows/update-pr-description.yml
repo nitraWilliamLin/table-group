@@ -2,7 +2,7 @@ name: Update PR Description
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
 
 jobs:
   update-pr-description:
@@ -24,15 +24,20 @@ jobs:
           # Get all PRs merged into staging
           PRS=$(gh pr list --base staging --state merged --json title,url)
 
-          # Extract the title and URL from each PR
+          # Extract the title and URL from each PR and format them
           PR_LIST=""
-          for PR in $(echo "$PRS" | jq -r '.[] | "- \(.title) \(.url)"'); do
-            PR_LIST+="$PR\n"
+          for row in $(echo "$PRS" | jq -r '.[] | @base64'); do
+            _jq() {
+              echo ${row} | base64 --decode | jq -r ${1}
+            }
+            PR_TITLE=$(_jq '.title')
+            PR_URL=$(_jq '.url')
+            PR_LIST+="- [${PR_TITLE}](${PR_URL})\n"
           done
 
-          # Update the current PR description
+          # Overwrite the PR description with the updated list
           if [[ -n "$PR_LIST" ]]; then
-            gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}\n\n### PRs Merged into Staging:\n$PR_LIST"
+            gh pr edit ${{ github.event.pull_request.number }} --body "### PRs Merged into Staging:\n$PR_LIST"
           fi
         fi
       env:
