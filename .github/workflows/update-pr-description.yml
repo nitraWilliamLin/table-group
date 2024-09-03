@@ -1,0 +1,39 @@
+name: Update PR Description
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  update-pr-description:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Check PR title and update description
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        if [[ "$PR_TITLE" == "Merge staging into main" ]]; then
+          # Get all PRs merged into staging
+          PRS=$(gh pr list --base staging --state merged --json title,url)
+
+          # Extract the title and URL from each PR
+          PR_LIST=""
+          for PR in $(echo "$PRS" | jq -r '.[] | "- \(.title) \(.url)"'); do
+            PR_LIST+="$PR\n"
+          done
+
+          # Update the current PR description
+          if [[ -n "$PR_LIST" ]]; then
+            gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}\n\n### PRs Merged into Staging:\n$PR_LIST"
+          fi
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
