@@ -25,7 +25,8 @@ jobs:
           PRS=$(gh pr list --base staging --state merged --json title,url)
 
           # Start building the PR list
-          PR_LIST="### PRs Merged into Staging:\n"
+          PR_LIST="### PRs Merged into Staging:"
+          PR_LIST+=$'\n'
 
           # Extract the title and URL from each PR and format them
           for row in $(echo "$PRS" | jq -r '.[] | @base64'); do
