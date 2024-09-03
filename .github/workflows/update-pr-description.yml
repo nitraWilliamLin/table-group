@@ -24,22 +24,21 @@ jobs:
           # Get all PRs merged into staging
           PRS=$(gh pr list --base staging --state merged --json title,url)
 
+          # Start building the PR list
+          PR_LIST="### PRs Merged into Staging:\n"
+
           # Extract the title and URL from each PR and format them
-          PR_LIST=""
           for row in $(echo "$PRS" | jq -r '.[] | @base64'); do
             _jq() {
               echo ${row} | base64 --decode | jq -r ${1}
             }
             PR_TITLE=$(_jq '.title')
             PR_URL=$(_jq '.url')
-            PR_LIST+="- [${PR_TITLE}](${PR_URL})"
-            PR_LIST+=$'\n'
+            PR_LIST+="- [${PR_TITLE}](${PR_URL})\n"
           done
 
-          # Overwrite the PR description with the updated list
-          if [[ -n "$PR_LIST" ]]; then
-            gh pr edit ${{ github.event.pull_request.number }} --body "### PRs Merged into Staging:$'\n'$PR_LIST"
-          fi
+          # Update the current PR description
+          gh pr edit ${{ github.event.pull_request.number }} --body "$PR_LIST"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
