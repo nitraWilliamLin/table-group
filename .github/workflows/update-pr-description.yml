@@ -32,7 +32,8 @@ jobs:
             }
             PR_TITLE=$(_jq '.title')
             PR_URL=$(_jq '.url')
-            PR_LIST+="- [${PR_TITLE}](${PR_URL})\n"
+            PR_LIST+="- [${PR_TITLE}](${PR_URL})"
+            PR_LIST+=$'\n'
           done
 
           # Overwrite the PR description with the updated list
