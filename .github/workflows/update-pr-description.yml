@@ -38,7 +38,7 @@ jobs:
 
           # Overwrite the PR description with the updated list
           if [[ -n "$PR_LIST" ]]; then
-            gh pr edit ${{ github.event.pull_request.number }} --body "### PRs Merged into Staging:\n$PR_LIST"
+            gh pr edit ${{ github.event.pull_request.number }} --body "### PRs Merged into Staging:$'\n'$PR_LIST"
           fi
         fi
       env:
