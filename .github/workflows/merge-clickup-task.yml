@@ -1,0 +1,41 @@
+name: Update ClickUp Tasks
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update-clickup-tasks:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Extract ClickUp task IDs from PR title
+        id: extract_ids
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          # Use regex to extract all ClickUp IDs enclosed in square brackets
+          CLICKUP_IDS=$(echo "$PR_TITLE" | grep -oP '\[([a-zA-Z0-9_]+)\]' | tr -d '[]' | tr '\n' ' ')
+          if [ -n "$CLICKUP_IDS" ]; then
+            echo "ClickUp IDs found: $CLICKUP_IDS"
+            echo "::set-output name=clickup_ids::$CLICKUP_IDS"
+          else
+            echo "No ClickUp task IDs found in PR title."
+            exit 1
+          fi
+
+      - name: Update ClickUp task statuses
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_IDS: ${{ steps.extract_ids.outputs.clickup_ids }}
+        run: |
+          for ID in $CLICKUP_IDS; do
+            echo "Updating ClickUp task ID: $ID"
+            curl -X PUT \
+            -H "Authorization: $CLICKUP_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"status": "Done"}' \
+            "https://api.clickup.com/api/v2/task/$ID"
+          done
