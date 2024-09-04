@@ -1,4 +1,4 @@
-name: Update PR with ClickUp Links
+name: Link ClickUp Task from PR Title
 
 on:
   pull_request:
@@ -24,14 +24,16 @@ jobs:
 
         if [[ -n "$CLICKUP_IDS" ]]; then
           # Build the ClickUp task links
-          RELATED_TASKS="### Related ClickUp Tasks:\n"
+          RELATED_TASKS+=$'\n\n'
+          RELATED_TASKS+="### Related ClickUp Tasks:"
+          RELATED_TASKS+=$'\n'
           for ID in $CLICKUP_IDS; do
             RELATED_TASKS+="- [${ID}](https://app.clickup.com/t/${ID})"
             RELATED_TASKS+=$'\n'
           done
 
           # Append to the existing PR description
-          gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}\n\n$RELATED_TASKS"
+          gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}$RELATED_TASKS"
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
