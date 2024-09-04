@@ -33,9 +33,11 @@ jobs:
 
             # Handle cases where the task name is not available
             if [[ -n "$TASK_NAME" && "$TASK_NAME" != "null" ]]; then
-              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})\n"
+              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})"
+              RELATED_TASKS+=$'\n'
             else
-              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})\n"
+              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})"
+              RELATED_TASKS+=$'\n'
             fi
           done
 
