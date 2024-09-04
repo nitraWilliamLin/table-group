@@ -1,8 +1,8 @@
-name: Update PR Description with ClickUp Task Names
+name: Add ClickUp Task Link to Description
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 jobs:
   update-pr-description:
@@ -39,7 +39,8 @@ jobs:
                           "https://api.clickup.com/api/v2/task/$ID")
             TASK_NAME=$(echo $RESPONSE | jq -r '.name')
             TASK_LINK="https://app.clickup.com/t/$ID"
-            TASK_NAMES="${TASK_NAMES}- [${TASK_NAME}](${TASK_LINK})\n"
+            TASK_NAMES="${TASK_NAMES}- [${TASK_NAME}](${TASK_LINK})"
+            TASK_NAMES+=$'\n'
           done
           echo "::set-output name=task_names::$TASK_NAMES"
 

@@ -1,4 +1,4 @@
-name: Update PR Description
+name: Update Merge Staging into Main Description
 
 on:
   pull_request:
