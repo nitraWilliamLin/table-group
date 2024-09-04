@@ -22,29 +22,5 @@ jobs:
         PR_TITLE="${{ github.event.pull_request.title }}"
         CLICKUP_IDS=$(echo "$PR_TITLE" | grep -oP '\[\K[a-zA-Z0-9]+(?=\])')
 
-        if [[ -n "$CLICKUP_IDS" ]]; then
-          # Build the ClickUp task links
-          RELATED_TASKS+=$'\n\n'
-          RELATED_TASKS+="### Related ClickUp Tasks:"
-          RELATED_TASKS+=$'\n'
-          for ID in $CLICKUP_IDS; do
-            # Fetch task name from ClickUp API
-            TASK_NAME=$(curl -s -H "Authorization: ${{ secrets.CLICKUP_API_TOKEN }}" "https://api.clickup.com/api/v2/task/${ID}" | jq -r '.name')
-
-            # Handle cases where the task name is not available
-            if [[ -n "$TASK_NAME" && "$TASK_NAME" != "null" ]]; then
-              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})"
-              RELATED_TASKS+=$'\n'
-            else
-              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})"
-              RELATED_TASKS+=$'\n'
-            fi
-          done
-
-          # Append to the existing PR description
-          gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}$RELATED_TASKS"
-        else
-          echo "No ClickUp task IDs found in PR title. Skipping update."
-        fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
