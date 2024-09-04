@@ -53,7 +53,7 @@ jobs:
             jq -n --arg body "$NEW_BODY" '{ body: $body }' > pr_description.json
 
             curl -X PATCH \
-              -H "Authorization: Bearer $REPO_GITHUB_TOKEN" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -d @pr_description.json \
               "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}"
