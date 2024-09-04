@@ -43,6 +43,8 @@ jobs:
 
           # Append to the existing PR description
           gh pr edit ${{ github.event.pull_request.number }} --body "${{ github.event.pull_request.body }}$RELATED_TASKS"
+        else
+          echo "No ClickUp task IDs found in PR title. Skipping update."
         fi
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
