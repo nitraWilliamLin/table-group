@@ -28,12 +28,14 @@ jobs:
           RELATED_TASKS+="### Related ClickUp Tasks:"
           RELATED_TASKS+=$'\n'
           for ID in $CLICKUP_IDS; do
-            if [[ -n "$TASK_NAME" ]]; then
-              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})"
-              RELATED_TASKS+=$'\n'
+            # Fetch task name from ClickUp API
+            TASK_NAME=$(curl -s -H "Authorization: ${{ secrets.CLICKUP_API_TOKEN }}" "https://api.clickup.com/api/v2/task/${ID}" | jq -r '.name')
+
+            # Handle cases where the task name is not available
+            if [[ -n "$TASK_NAME" && "$TASK_NAME" != "null" ]]; then
+              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})\n"
             else
-              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})"
-              RELATED_TASKS+=$'\n'
+              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})\n"
             fi
           done
 
