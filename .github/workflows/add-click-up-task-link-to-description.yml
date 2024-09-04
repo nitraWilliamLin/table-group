@@ -2,7 +2,7 @@ name: Update PR Description with ClickUp Task Names
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, edited]
 
 jobs:
   update-pr-description:
