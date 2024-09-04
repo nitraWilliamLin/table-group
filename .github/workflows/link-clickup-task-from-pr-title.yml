@@ -20,6 +20,7 @@ jobs:
     - name: Extract ClickUp IDs and update PR description
       run: |
         PR_TITLE="${{ github.event.pull_request.title }}"
+        CLICKUP_IDS=$(echo grep -oP '\[\K[a-zA-Z0-9]+(?=\])')
 
 
       env:
