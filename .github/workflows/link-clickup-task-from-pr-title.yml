@@ -28,8 +28,13 @@ jobs:
           RELATED_TASKS+="### Related ClickUp Tasks:"
           RELATED_TASKS+=$'\n'
           for ID in $CLICKUP_IDS; do
-            RELATED_TASKS+="- [${ID}](https://app.clickup.com/t/${ID})"
-            RELATED_TASKS+=$'\n'
+            if [[ -n "$TASK_NAME" ]]; then
+              RELATED_TASKS+="- [${TASK_NAME}](https://app.clickup.com/t/${ID})"
+              RELATED_TASKS+=$'\n'
+            else
+              RELATED_TASKS+="- [Task ID: ${ID}](https://app.clickup.com/t/${ID})"
+              RELATED_TASKS+=$'\n'
+            fi
           done
 
           # Append to the existing PR description
