@@ -1,4 +1,4 @@
-name: Update PR with ClickUp Links
+name: Link ClickUp Task from PR Title
 
 on:
   pull_request:
