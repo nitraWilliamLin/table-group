@@ -1,0 +1,60 @@
+name: Update PR Description with ClickUp Task Names
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  update-pr-description:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Extract ClickUp task IDs from PR title
+        id: extract_ids
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          # Use regex to extract all ClickUp IDs enclosed in square brackets
+          CLICKUP_IDS=$(echo "$PR_TITLE" | grep -oP '\[([a-zA-Z0-9_]+)\]' | tr -d '[]' | tr '\n' ' ')
+          if [ -n "$CLICKUP_IDS" ]; then
+            echo "ClickUp IDs found: $CLICKUP_IDS"
+            echo "::set-output name=clickup_ids::$CLICKUP_IDS"
+          else
+            echo "No ClickUp task IDs found in PR title."
+            exit 0
+          fi
+
+      - name: Fetch ClickUp task names
+        id: fetch_task_names
+        env:
+          CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
+          CLICKUP_IDS: ${{ steps.extract_ids.outputs.clickup_ids }}
+        run: |
+          TASK_NAMES=""
+          for ID in $CLICKUP_IDS; do
+            RESPONSE=$(curl -s -H "Authorization: $CLICKUP_API_TOKEN" \
+                          -H "Content-Type: application/json" \
+                          "https://api.clickup.com/api/v2/task/$ID")
+            TASK_NAME=$(echo $RESPONSE | jq -r '.name')
+            TASK_LINK="https://app.clickup.com/t/$ID"
+            TASK_NAMES="${TASK_NAMES}- [${TASK_NAME}](${TASK_LINK})\n"
+          done
+          echo "::set-output name=task_names::$TASK_NAMES"
+
+      - name: Update PR description
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
+          TASK_NAMES: ${{ steps.fetch_task_names.outputs.task_names }}
+        run: |
+          if [ -n "$TASK_NAMES" ]; then
+            NEW_BODY="### Related ClickUp Tasks\n$TASK_NAMES\n\n${{ github.event.pull_request.body }}"
+            jq -n --arg body "$NEW_BODY" '{ body: $body }' > pr_description.json
+
+            curl -X PATCH \
+              -H "Authorization: Bearer $REPO_GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d @pr_description.json \
+              "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}"
+          fi
